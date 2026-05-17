@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "天天基金小助手",
+  "version": "1.0",
+  "description": "监控QDII基金每日购买限额变化，支持纳斯达克100、标普500等",
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.1234567.com.cn/*",
+    "*://*.eastmoney.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "纳斯达克100基金限额"
+  }
+}

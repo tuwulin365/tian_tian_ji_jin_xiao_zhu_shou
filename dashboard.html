@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>天天基金小助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: white;
+    }
+    
+    .sort-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 0;
+      margin-left: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .sort-controls label {
+      font-size: 14px;
+      color: #666;
+      white-space: nowrap;
+    }
+    
+    #sortSelect {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: white;
+      cursor: pointer;
+    }
+    
+    .sort-btn {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background-color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .sort-btn:hover {
+      background-color: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .sort-btn.active {
+      background-color: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .fund-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .fund-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-left: 4px solid transparent;
+    }
+    
+    .fund-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .fund-info-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 300px;
+    }
+    
+    .fund-info-row .fund-code {
+      font-weight: 600;
+      color: #667eea;
+      font-size: 16px;
+      min-width: 80px;
+    }
+    
+    .fund-info-row .fund-name {
+      font-size: 15px;
+      color: #333;
+      text-align: left;
+      flex: 1;
+    }
+    
+    .fund-info-row .fund-name a {
+      color: #333;
+      text-decoration: none;
+    }
+    
+    .fund-info-row .fund-name a:hover {
+      color: #667eea;
+      text-decoration: underline;
+    }
+    
+    .fund-status-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .fund-status-row .update-time {
+      font-size: 12px;
+      color: #999;
+      white-space: nowrap;
+    }
+    
+    .fund-card:last-child {
+      margin-bottom: 0;
+    }
+    
+    .fund-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .fund-card.limited {
+      border-left-color: #f44336;
+      background: linear-gradient(135deg, #ffebee 0%, #ffffff 100%);
+    }
+    
+    .fund-card.normal {
+      border-left-color: #4caf50;
+      background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+    }
+    
+    .fund-card.error {
+      border-left-color: #ff9800;
+      background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+    }
+    
+    .fund-code {
+      font-size: 16px;
+      font-weight: bold;
+      color: #667eea;
+      white-space: nowrap;
+      min-width: 100px;
+    }
+    
+    .fund-name {
+      flex: 1;
+      font-size: 15px;
+      color: #333;
+      font-weight: 500;
+      min-width: 200px;
+    }
+    
+    .fund-name a {
+      color: #667eea;
+      text-decoration: none;
+    }
+    
+    .fund-name a:hover {
+      text-decoration: underline;
+    }
+    
+    .fund-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    
+    .status-normal {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .status-limited {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    
+    /* 已移除呼吸效果 */
+    .status-changed {
+      border: 2px solid #ff6b6b;
+    }
+    
+    .change-indicator {
+      display: none;
+      color: #ff9800;
+      font-size: 18px;
+      margin-left: 10px;
+      animation: blink 1s infinite;
+    }
+    
+    .change-info {
+      background-color: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 10px 15px;
+      margin-top: 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .change-label {
+      font-size: 13px;
+      color: #f57c00;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    .change-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    
+    .change-old {
+      font-size: 14px;
+      color: #f44336;
+    }
+    
+    .change-arrow {
+      font-size: 12px;
+      color: #999;
+      font-weight: 600;
+    }
+    
+    .change-new {
+      font-size: 14px;
+      color: #4caf50;
+      font-weight: 600;
+    }
+    
+    /* 已移除呼吸效果动画 */
+    
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    /* 历史记录提示框 */
+    .history-tooltip {
+      position: absolute;
+      background-color: #333;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      z-index: 1000;
+      max-width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+    }
+    
+    .history-tooltip.show {
+      display: block;
+    }
+    
+    .history-tooltip h4 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      color: #ff9800;
+    }
+    
+    .history-item {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #444;
+    }
+    
+    .history-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .history-time {
+      color: #999;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+    
+    .history-change {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .history-old {
+      color: #f44336;
+    }
+    
+    .history-new {
+      color: #4caf50;
+    }
+    
+    .history-arrow {
+      color: #999;
+      text-align: center;
+      font-size: 10px;
+    }
+    
+    .history-no-data {
+      color: #999;
+      text-align: center;
+      font-size: 13px;
+      padding: 10px 0;
+    }
+    
+    .status-error {
+      background-color: #fff3e0;
+      color: #ef6c00;
+    }
+    
+    .limit-amount {
+      font-size: 14px;
+      color: #666;
+      white-space: nowrap;
+    }
+    
+    .fund-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #999;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background-color: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #5568d3;
+    }
+    
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #bdbdbd;
+    }
+    
+    .btn-refresh {
+      background-color: #4caf50;
+      color: white;
+    }
+    
+    .btn-refresh:hover {
+      background-color: #43a047;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #667eea;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+      background-color: #667eea;
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+    
+    .last-update {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+      <div class="header">
+        <h1>天天基金小助手</h1>
+        <p>实时监控QDII基金每日购买限额变化</p>
+      </div>
+      
+      <!-- 历史记录提示框 -->
+      <div id="historyTooltip" class="history-tooltip">
+        <h4>限额变化历史</h4>
+        <div id="historyContent"></div>
+      </div>
+    
+    <div class="actions">
+        <button id="checkNowBtn" class="btn btn-primary">立即检查</button>
+        <button id="openPopupBtn" class="btn btn-secondary">打开弹窗</button>
+        <button id="manageFundsBtn" class="btn btn-secondary">基金管理</button>
+        <div class="sort-controls">
+          <label>排序方式:</label>
+          <select id="sortSelect">
+            <option value="default">默认顺序（添加时间）</option>
+            <option value="code">按基金代码</option>
+            <option value="name">按基金名称</option>
+            <option value="status">按限购状态</option>
+          </select>
+          <button id="sortAscBtn" class="sort-btn">↑</button>
+          <button id="sortDescBtn" class="sort-btn">↓</button>
+        </div>
+      </div>
+    
+    <div id="content" class="loading">
+      正在加载数据...
+    </div>
+    
+
+  </div>
+
+  <script src="dashboard.js"></script>
+  <script src="debug.js"></script>
+</body>
+</html>
