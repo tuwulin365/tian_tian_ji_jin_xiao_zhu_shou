@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "天天基金小助手",
-  "version": "1.0",
+  "version": "1.2",
   "description": "监控QDII基金每日购买限额变化，支持纳斯达克100、标普500等",
   "permissions": [
     "storage",

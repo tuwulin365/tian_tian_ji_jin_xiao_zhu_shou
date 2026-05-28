@@ -328,15 +328,16 @@ function parseLimitFromHtml(html, fundCode) {
   if (suspendStatusMatch) {
     // 精确匹配到暂停申购且有具体限额
     hasLimit = true;
-    limitAmount = parseFloat(suspendStatusMatch[1]);
-    limitText = `暂停申购（单日累计购买上限 ${limitAmount.toFixed(2)} 元）`;
+    const amount = parseFloat(suspendStatusMatch[1]);
+    limitAmount = 0; // 设为0表示暂停申购状态
+    limitText = `暂停申购（单日累计购买上限 ${amount.toFixed(2)} 元）`;
   } else if (limitStatusMatch) {
     // 精确匹配到限大额
     hasLimit = true;
     limitAmount = parseFloat(limitStatusMatch[1]);
     limitText = `限大额（单日累计购买上限 ${limitAmount.toFixed(2)} 元）`;
   } else if (suspendMatch) {
-    // 普通暂停申购（没有具体限额）
+    // 普通暂停申购
     hasLimit = true;
     limitText = '暂停申购';
     limitAmount = 0;
