@@ -308,28 +308,40 @@ function parseLimitFromHtml(html, fundCode) {
   let limitAmount = null;
   let hasLimit = false;
   
-  // 方法1: 直接从HTML文本中提取交易状态和限额（不使用DOM解析）
-  // 查找暂停申购/开放申购状态
-  const suspendMatch = html.match(/暂停申购\s*(\(单日累计购买上限(.*?)\))?/i);
+  // 方法1: 精确匹配交易状态格式
+  // 匹配暂停申购格式: 交易状态：</span><span class="staticCell">暂停申购  (<span>单日累计购买上限 100.00 元
+  const suspendStatusMatch = html.match(/交易状态：<\/span><span class="staticCell">暂停申购\s*\(<span>单日累计购买上限\s*(\d+(?:\.\d+)?)\s*元/i);
+  // 匹配限大额格式: 交易状态：</span><span class="staticCell">限大额  (<span>单日累计购买上限 100.00 元
+  const limitStatusMatch = html.match(/交易状态：<\/span><span class="staticCell">限大额\s*\(<span>单日累计购买上限\s*(\d+(?:\.\d+)?)\s*元/i);
+  // 匹配普通暂停申购
+  const suspendMatch = html.match(/暂停申购(?!\s*\(单日累计购买上限)/i);
+  // 匹配开放申购
   const openMatch = html.match(/开放申购/i);
   
-  if (suspendMatch) {
+  // 打印匹配结果到日志
+  console.log(`基金 ${fundCode} 匹配结果:`);
+  console.log(`  带金额暂停申购匹配: ${suspendStatusMatch ? suspendStatusMatch[0] : '未匹配'}`);
+  console.log(`  限大额匹配: ${limitStatusMatch ? limitStatusMatch[0] : '未匹配'}`);
+  console.log(`  普通暂停申购匹配: ${suspendMatch ? suspendMatch[0] : '未匹配'}`);
+  console.log(`  开放申购匹配: ${openMatch ? openMatch[0] : '未匹配'}`);
+  
+  if (suspendStatusMatch) {
+    // 精确匹配到暂停申购且有具体限额
     hasLimit = true;
-    if (suspendMatch[2]) {
-      limitText = suspendMatch[0].trim();
-      // 提取限额金额
-      const amountMatch = suspendMatch[2].match(/(\d+(?:\.\d+)?)(万|元)/i);
-      if (amountMatch) {
-        limitAmount = parseFloat(amountMatch[1]);
-        if (amountMatch[2] === '万') {
-          limitAmount = limitAmount * 10000;
-        }
-      }
-    } else {
-      limitText = '暂停申购';
-      limitAmount = 0;
-    }
+    limitAmount = parseFloat(suspendStatusMatch[1]);
+    limitText = `暂停申购（单日累计购买上限 ${limitAmount.toFixed(2)} 元）`;
+  } else if (limitStatusMatch) {
+    // 精确匹配到限大额
+    hasLimit = true;
+    limitAmount = parseFloat(limitStatusMatch[1]);
+    limitText = `限大额（单日累计购买上限 ${limitAmount.toFixed(2)} 元）`;
+  } else if (suspendMatch) {
+    // 普通暂停申购（没有具体限额）
+    hasLimit = true;
+    limitText = '暂停申购';
+    limitAmount = 0;
   } else if (openMatch) {
+    // 开放申购
     hasLimit = false;
     limitText = '开放申购，无限制';
   } else {
