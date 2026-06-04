@@ -452,7 +452,7 @@ async function updateFundLimit(fundCode, newLimitData) {
     if (limitChanged) {
       showNotification(fundCode, oldLimitData, newLimitData);
       // 记录有变化的基金
-      await recordChangedFund(fundCode);
+      // 角标功能已移除，不再记录变化的基金
     }
   
   // 保存到本地存储
@@ -541,41 +541,7 @@ function showNotification(fundCode, oldData, newData) {
   });
 }
 
-// 更新扩展图标角标
-async function updateBadge() {
-  // 获取有变化的基金数量
-  const result = await chrome.storage.local.get('changedFunds');
-  const changedFunds = result.changedFunds || [];
-  const count = changedFunds.length;
-  
-  // 设置角标
-  if (count > 0) {
-    chrome.action.setBadgeText({ text: count.toString() });
-    chrome.action.setBadgeBackgroundColor({ color: '#ff6b6b' });
-  } else {
-    chrome.action.setBadgeText({ text: '' });
-  }
-}
-
-// 记录有变化的基金
-async function recordChangedFund(fundCode) {
-  const result = await chrome.storage.local.get('changedFunds');
-  const changedFunds = result.changedFunds || [];
-  
-  if (!changedFunds.includes(fundCode)) {
-    changedFunds.push(fundCode);
-    await chrome.storage.local.set({ changedFunds: changedFunds });
-  }
-  
-  // 更新角标
-  await updateBadge();
-}
-
-// 清除变化记录
-async function clearChangedFunds() {
-  await chrome.storage.local.set({ changedFunds: [] });
-  await updateBadge();
-}
+// 角标功能已移除
 
 // 供popup调用的接口
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -625,13 +591,6 @@ async function clearChangedFunds() {
           console.log('基金列表更新后检查成功，记录今天的日期:', today);
           sendResponse({ success: true });
         });
-      }).catch(error => {
-        sendResponse({ success: false, error: error.message });
-      });
-      return true; // 表示异步响应
-    } else if (request.action === 'clearChangedFunds') {
-      clearChangedFunds().then(() => {
-        sendResponse({ success: true });
       }).catch(error => {
         sendResponse({ success: false, error: error.message });
       });
