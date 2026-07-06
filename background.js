@@ -330,12 +330,12 @@ function parseLimitFromHtml(html, fundCode) {
     hasLimit = true;
     const amount = parseFloat(suspendStatusMatch[1]);
     limitAmount = 0; // 设为0表示暂停申购状态
-    limitText = `暂停申购（单日累计购买上限 ${amount.toFixed(2)} 元）`;
+    limitText = `暂停申购（单日累计购买上限${amount.toFixed(2)}元）`;
   } else if (limitStatusMatch) {
     // 精确匹配到限大额
     hasLimit = true;
     limitAmount = parseFloat(limitStatusMatch[1]);
-    limitText = `限大额（单日累计购买上限 ${limitAmount.toFixed(2)} 元）`;
+    limitText = `限大额（单日累计购买上限${limitAmount.toFixed(2)}元）`;
   } else if (suspendMatch) {
     // 普通暂停申购
     hasLimit = true;
@@ -379,9 +379,16 @@ function parseLimitFromHtml(html, fundCode) {
     }
   }
   
+  limitText = limitText || '未找到限额信息';
+  limitText = limitText
+    .replace(/\(/g, '（')
+    .replace(/\)/g, '）')
+    .replace(/（\s*/g, '（')
+    .replace(/\s*）/g, '）');
+
   return {
     fundCode,
-    limitText: limitText || '未找到限额信息',
+    limitText: limitText,
     limitAmount: limitAmount,
     checkTime: new Date().toISOString(),
     hasLimit: hasLimit || !!limitAmount || limitText.includes('限额') || limitText.includes('限购')
